@@ -3,7 +3,18 @@
 Ce guide compile l'application à la main sur le poste et l'installe sur un smartphone Android branché
 en USB. Il ne demande ni compte Expo ni service cloud (EAS).
 
-Le SDK Android et le JDK 17 doivent être déjà installés : voir `INSTALL_ANDROID_SDK.md`.
+Le SDK Android et le JDK 17 doivent être déjà installés. Le script `setup_android_env.sh` les
+installe et vérifie le poste :
+
+```bash
+./setup_android_env.sh --check   # vérifier seulement
+./setup_android_env.sh           # installer ce qui manque (demande sudo pour apt)
+```
+
+Il installe les versions demandées par React Native, qu'il lit dans `node_modules` : plateforme
+`android-37.0`, build-tools 37.0.0 et NDK 27.1.12297006. Il ajoute les variables d'environnement à
+`~/.zshrc` et vérifie que le téléphone est détecté. On peut le relancer sans risque. Les explications
+détaillées sont dans `INSTALL_ANDROID_SDK.md`.
 
 ## Analyse
 

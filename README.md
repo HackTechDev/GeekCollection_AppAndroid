@@ -44,8 +44,8 @@ Application React Native (Expo SDK 58, expo-router) qui affiche « Ma bibliothè
 
 Guide détaillé, avec l'analyse et les solutions aux erreurs courantes : `HOW_TO_BUILD.md`.
 
-Prérequis : SDK Android et JDK 17 (voir `INSTALL_ANDROID_SDK.md`), téléphone en débogage USB
-(`adb devices` doit l'afficher).
+Prérequis : SDK Android et JDK 17, téléphone en débogage USB. `./setup_android_env.sh` installe
+l'environnement, et `./setup_android_env.sh --check` le vérifie.
 
 ```bash
 npm install --legacy-peer-deps
