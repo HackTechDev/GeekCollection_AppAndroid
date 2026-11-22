@@ -11,10 +11,12 @@ type AuthContextValue = {
   status: AuthStatus;
   token: string | null;
   account: Account | null;
+  /** Message à afficher sur l'écran de connexion (session expirée), ou null. */
+  notice: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   /** À appeler quand l'API répond `invalid_token` : retour à l'écran de connexion. */
-  expireSession: () => Promise<void>;
+  expireSession: (message?: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -28,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading');
   const [token, setToken] = useState<string | null>(null);
   const [account, setAccount] = useState<Account | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const reset = useCallback(async () => {
     await tokenStore.clear();
@@ -55,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (e) {
         if (e instanceof ApiError && e.isAuthError) {
           await reset();
+          setNotice(e.message);
         } else {
           // Hors ligne ou serveur indisponible : on garde la session et la copie locale.
           setAccount(savedAccount);
@@ -69,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await login(email.trim(), password, deviceName());
     await tokenStore.save(result.token);
     await tokenStore.saveAccount(result.user);
+    setNotice(null);
     setToken(result.token);
     setAccount(result.user);
     setStatus('signedIn');
@@ -85,9 +90,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await reset();
   }, [token, reset]);
 
+  const expireSession = useCallback(
+    async (message?: string) => {
+      await reset();
+      setNotice(message ?? 'Ta session a expiré : reconnecte-toi.');
+    },
+    [reset],
+  );
+
   const value = useMemo(
-    () => ({ status, token, account, signIn, signOut, expireSession: reset }),
-    [status, token, account, signIn, signOut, reset],
+    () => ({ status, token, account, notice, signIn, signOut, expireSession }),
+    [status, token, account, notice, signIn, signOut, expireSession],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

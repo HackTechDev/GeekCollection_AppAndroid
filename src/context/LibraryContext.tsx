@@ -44,7 +44,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') return;
       if (e instanceof ApiError && e.isAuthError) {
-        await expireSession();
+        await expireSession(e.message);
         return;
       }
       setError(e instanceof Error ? e.message : 'Erreur inconnue.');

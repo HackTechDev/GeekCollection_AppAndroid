@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { colors, radius } from '../theme';
 
 export default function LoginScreen() {
-  const { signIn } = useAuth();
+  const { signIn, notice } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -87,7 +87,11 @@ export default function LoginScreen() {
               editable={!submitting}
             />
 
-            {error && <Text style={styles.error}>{error}</Text>}
+            {error ? (
+              <Text style={styles.error}>{error}</Text>
+            ) : (
+              notice && <Text style={styles.notice}>{notice}</Text>
+            )}
 
             <Pressable
               onPress={submit}
@@ -134,6 +138,14 @@ const styles = StyleSheet.create({
   error: {
     color: colors.danger,
     backgroundColor: colors.dangerSoft,
+    padding: 10,
+    borderRadius: radius.sm,
+    marginBottom: 16,
+    fontSize: 14,
+  },
+  notice: {
+    color: '#92400e',
+    backgroundColor: colors.loanedSoft,
     padding: 10,
     borderRadius: radius.sm,
     marginBottom: 16,

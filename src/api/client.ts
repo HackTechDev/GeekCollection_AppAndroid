@@ -68,9 +68,13 @@ export class ApiError extends Error {
     this.name = 'ApiError';
   }
 
-  /** Le jeton n'est plus valable : il faut revenir à l'écran de connexion. */
+  /**
+   * Le jeton n'est plus valable (révoqué, mot de passe changé…) : il faut revenir à l'écran de connexion.
+   * `missing_token` n'en fait pas partie : l'application envoie toujours le jeton, donc ce code signale
+   * un en-tête `Authorization` perdu en route (configuration du serveur), pas une session expirée.
+   */
   get isAuthError(): boolean {
-    return this.status === 401 && (this.code === 'invalid_token' || this.code === 'missing_token');
+    return this.status === 401 && this.code === 'invalid_token';
   }
 
   get isNetworkError(): boolean {
@@ -114,12 +118,13 @@ async function request<T>(path: string, { method = 'GET', token, body, signal }:
 
   if (!response.ok) {
     const retryHeader = response.headers.get('Retry-After');
-    throw new ApiError(
-      data?.error?.code ?? 'server_error',
-      data?.error?.message ?? `Erreur du serveur (${response.status}).`,
-      response.status,
-      retryHeader ? Number(retryHeader) : null,
-    );
+    const code: string = data?.error?.code ?? 'server_error';
+    let message: string = data?.error?.message ?? `Erreur du serveur (${response.status}).`;
+    if (code === 'missing_token' && token) {
+      message = "Le serveur n'a pas reçu le jeton d'accès envoyé par l'application (en-tête Authorization perdu : configuration du serveur).";
+    }
+    console.warn(`API ${method} ${path} → ${response.status} ${code}`);
+    throw new ApiError(code, message, response.status, retryHeader ? Number(retryHeader) : null);
   }
   return data as T;
 }
